@@ -33,7 +33,7 @@ int rightButton = 0;
  void setup() {
    
    size(510, 510);
-   frameRate(40);
+   frameRate(20);
    rectMode(RADIUS);
 }
 
@@ -86,7 +86,7 @@ void draw() {
   fill(color(0, 0, 255));
   textAlign(CENTER, CENTER);
   textSize(40);
-  text("Ivan Robot Arm", width/2, 40);
+  text("Robot Arm", width/2, 40);
   
   // fill byte array with data
   int buff[] = {

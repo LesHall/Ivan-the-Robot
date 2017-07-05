@@ -73,8 +73,8 @@ void setup() {
   myStepper->step(0, FORWARD, MICROSTEP);  // move clockwise
 
   // initialize left and right motor positions
-  servo1.write(constrain(map(leftPos, 0, 127, leftPos1, leftPos2), leftPos1, leftPos2));
-  servo2.write(constrain(map(rightPos, 0, 127, rightPos1, rightPos2), rightPos1, rightPos2));
+  //servo1.write(constrain(map(leftPos, 0, 127, leftPos1, leftPos2), leftPos1, leftPos2));
+  //servo2.write(constrain(map(rightPos, 0, 127, rightPos1, rightPos2), rightPos1, rightPos2));
 
   // initialize the klaw position
   myMotor->setSpeed(klawPos);
@@ -105,7 +105,8 @@ void loop() {
     
     // update left motor angle
     leftPosPrev = leftPos;
-    leftPos = tau*leftPos + (1-tau)*int(buff[0]);
+    //leftPos = tau*leftPos + (1-tau)*int(buff[0]);
+    leftPos = int(buff[0]);
     //if ( (int(buff[2]) == 0) && (int(buff[3]) == 0) ) { // buttons up and ready to move
       if (abs(leftPos - leftPosPrev) >= diff) { // more than 'diff' distance apart
         if ( !servo1.attached() ) {  // servo not attached
@@ -120,7 +121,8 @@ void loop() {
     
     // update right motor angle
     rightPosPrev = rightPos;
-    rightPos = tau*rightPos + (1-tau)*int(buff[1]);
+    //rightPos = tau*rightPos + (1-tau)*int(buff[1]);
+    rightPos = int(buff[1]);
     //if ( (int(buff[2]) == 0) && (int(buff[3]) == 0) ) {  // buttons up and ready to move
       if (abs(rightPos - rightPosPrev) >= diff) { // more than 'diff' distance apart
         if ( !servo2.attached() ) {  // servo not attached
@@ -136,7 +138,8 @@ void loop() {
     // adjust grip of klaw to be open or closed when left mouse button is closed, y axos
     //if ( (int(buff[2]) == 0) && (int(buff[3]) == 0) ) {  // buttons up and ready to move
       //klawPos = int(int(buff[0]) * (1.0 - cos(2*PI * int(buff[1])/127.0) ) );
-      klawPos = int(buff[2]);
+      klawPos = int(buff[2]) == 0 ? 127*2/3 : 127/3;
+      klawPos = constrain(klawPos, 0, 127);
       //klawPos = tau*klawPos + (1-tau)*int(buff[2]);
       myMotor->setSpeed(constrain(map(klawPos, 0, 127, klawPos1, klawPos2), klawPos1, klawPos2));
       delay(dly);
