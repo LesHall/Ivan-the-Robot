@@ -28,12 +28,14 @@ boolean portSelected = false;
 int w = 16;
 int leftButton = 0;
 int rightButton = 0;
+boolean motionSelect = false;
+
 
 
  void setup() {
    
    size(510, 510);
-   frameRate(20);
+   frameRate(motionSelect ? 10 : 20);
    rectMode(RADIUS);
 }
 
@@ -43,11 +45,18 @@ void draw() {
   
   // set up this frame
   background(0, 255, 255);
+  strokeWeight(5);
   
+  // Lissajous patterns for debugging serial port.  
+  // Also for demonstration or repetitive task performance.  
+  float motionX = width/2 * cos(TWO_PI * frameCount / 250);
+  float motionY = height/2 * sin(TWO_PI * frameCount / 250);
+  float motionR = width/2 * ( 2 + sin(TWO_PI * frameCount / 1000) ) / 4;
+   
   // convert to polar, then rotate 45 degrees
-  float x0 = mouseX - width/2;
-  float y0 = mouseY - height/2;
-  float radius = sqrt(x0*x0 + y0*y0);
+  float x0 = motionSelect ? motionX : mouseX - width/2;
+  float y0 = motionSelect ? motionY : mouseY - height/2;
+  float radius = motionSelect ? motionR : sqrt(x0*x0 + y0*y0);
   radius = constrain(radius, 0, width/2);
   float theta = atan2(y0, x0);
   float x1 = width/2 + radius * cos(theta);
@@ -96,6 +105,12 @@ void draw() {
     int(rightButton), 
     int(128),
   };
+  
+  // draw lines in the middle indicating X and Y
+  stroke(255, 255, 0);
+  line(width/2, height/2, width/2 + width/2*cos(TWO_PI * buff[0]/127), width/2 + width/2*sin(TWO_PI * buff[0]/127));
+  stroke(0, 255, 255);
+  line(width/2, height/2, width/2 + width/2*cos(TWO_PI * buff[1]/127), width/2 + width/2*sin(TWO_PI * buff[1]/127));
   
   // write out one set of commands
   if (portSelected) {

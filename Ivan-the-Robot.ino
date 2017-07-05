@@ -80,7 +80,6 @@ void setup() {
   myMotor->setSpeed(klawPos);
   myMotor->run(RELEASE);
   myMotor->run(FORWARD);
-  //servo3.write(constrain(map(klawPos, 0, 127, klawPos1, klawPos2), klawPos1, klawPos2));
 }
 
 
@@ -96,55 +95,46 @@ void loop() {
     // move stepper one step in direction of commmand
     if ( (int(buff[2]) == 0) && (int(buff[3]) != 0) ) { // buttons up and ready to move
       myStepper->step(1, FORWARD, MICROSTEP);  // move clockwise
-      delay(dly);  // delay to allow commands to take effect
+      //delay(dly);  // delay to allow commands to take effect
     }
     if ( (int(buff[2]) != 0) && (int(buff[3]) == 0) ) { // buttons up and ready to move
       myStepper->step(1, BACKWARD, MICROSTEP);  // move counter-clockwise
-      delay(dly);  // delay to allow commands to take effect
+      //delay(dly);  // delay to allow commands to take effect
     }
     
     // update left motor angle
     leftPosPrev = leftPos;
-    //leftPos = tau*leftPos + (1-tau)*int(buff[0]);
     leftPos = int(buff[0]);
-    //if ( (int(buff[2]) == 0) && (int(buff[3]) == 0) ) { // buttons up and ready to move
-      if (abs(leftPos - leftPosPrev) >= diff) { // more than 'diff' distance apart
-        if ( !servo1.attached() ) {  // servo not attached
-          servo1.attach(10);  // attach servo
-        }
-        servo1.write(constrain(map(leftPos, 0, 127, leftPos1, leftPos2), leftPos1, leftPos2));  // move servo
-      } else if (servo1.attached()) {  // servo attached
-        servo1.detach();  // detach servo
+    if (abs(leftPos - leftPosPrev) >= diff) { // more than 'diff' distance apart
+      if ( !servo1.attached() ) {  // servo not attached
+        servo1.attach(10);  // attach servo
       }
-      delay(dly);  // delay to allow commands to take effect
-    //}
-    
+      servo1.write(constrain(map(leftPos, 0, 127, leftPos1, leftPos2), leftPos1, leftPos2));  // move servo
+    } else if (servo1.attached()) {  // servo attached
+      servo1.detach();  // detach servo
+    }
+  
     // update right motor angle
     rightPosPrev = rightPos;
-    //rightPos = tau*rightPos + (1-tau)*int(buff[1]);
     rightPos = int(buff[1]);
-    //if ( (int(buff[2]) == 0) && (int(buff[3]) == 0) ) {  // buttons up and ready to move
-      if (abs(rightPos - rightPosPrev) >= diff) { // more than 'diff' distance apart
-        if ( !servo2.attached() ) {  // servo not attached
-          servo2.attach(9);  // attach servo
-        } 
-        servo2.write(constrain(map(rightPos, 0, 127, rightPos1, rightPos2), rightPos1, rightPos2));  // move servo
-      } else if (servo2.attached()) {  // servo attached
-        servo2.detach();  // detach servo
-      }
-      delay(dly);  // delay to allow commands to take effect
-    //}
+    if (abs(rightPos - rightPosPrev) >= diff) { // more than 'diff' distance apart
+      if ( !servo2.attached() ) {  // servo not attached
+        servo2.attach(9);  // attach servo
+      } 
+      servo2.write(constrain(map(rightPos, 0, 127, rightPos1, rightPos2), rightPos1, rightPos2));  // move servo
+    } else if (servo2.attached()) {  // servo attached
+      servo2.detach();  // detach servo
+    }
     
     // adjust grip of klaw to be open or closed when left mouse button is closed, y axos
-    //if ( (int(buff[2]) == 0) && (int(buff[3]) == 0) ) {  // buttons up and ready to move
-      //klawPos = int(int(buff[0]) * (1.0 - cos(2*PI * int(buff[1])/127.0) ) );
-      klawPos = int(buff[2]) == 0 ? 127*2/3 : 127/3;
-      klawPos = constrain(klawPos, 0, 127);
-      //klawPos = tau*klawPos + (1-tau)*int(buff[2]);
-      myMotor->setSpeed(constrain(map(klawPos, 0, 127, klawPos1, klawPos2), klawPos1, klawPos2));
-      delay(dly);
-    //}
+    klawPos = int(buff[2]) == 0 ? 127*2/3 : 127/3;
+    klawPos = constrain(klawPos, 0, 127);
+    myMotor->setSpeed(constrain(map(klawPos, 0, 127, klawPos1, klawPos2), klawPos1, klawPos2));
+    myMotor->run(RELEASE);
+    myMotor->run(FORWARD);
+
       
+    delay(dly);
     stringComplete = false;
 
     // the following line is from adafruit_support_bill, an amazingly helpful person
@@ -165,7 +155,7 @@ void serialEvent() {
 
     // read in the data bytes
     Serial.readBytesUntil(char(128), buff, 10);
-    //Serial.flush();
+    Serial.flush();
     
     stringComplete = true;
   }
