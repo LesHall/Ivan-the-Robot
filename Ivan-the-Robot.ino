@@ -60,7 +60,9 @@ void setup() {
   Serial.begin(9600);  // set up Serial library at 9600 bps
  
   AFMS.begin(1000.0/3.0);  // create with 333Hz frequency (3ms period)
-  
+
+  stringComplete = false;
+
   // Attach servos to pins
   servo1.attach(10);
   servo2.attach(9);
@@ -109,7 +111,7 @@ void loop() {
         if ( !servo1.attached() ) {  // servo not attached
           servo1.attach(10);  // attach servo
         }
-        servo1.write(constrain(map(leftPos, 1, 127, leftPos1, leftPos2), leftPos1, leftPos2));  // move servo
+        servo1.write(constrain(map(leftPos, 0, 127, leftPos1, leftPos2), leftPos1, leftPos2));  // move servo
       } else if (servo1.attached()) {  // servo attached
         servo1.detach();  // detach servo
       }
@@ -124,7 +126,7 @@ void loop() {
         if ( !servo2.attached() ) {  // servo not attached
           servo2.attach(9);  // attach servo
         } 
-        servo2.write(constrain(map(rightPos, 1, 127, rightPos1, rightPos2), rightPos1, rightPos2));  // move servo
+        servo2.write(constrain(map(rightPos, 0, 127, rightPos1, rightPos2), rightPos1, rightPos2));  // move servo
       } else if (servo2.attached()) {  // servo attached
         servo2.detach();  // detach servo
       }
@@ -134,9 +136,10 @@ void loop() {
     // adjust grip of klaw to be open or closed when left mouse button is closed, y axos
     //if ( (int(buff[2]) == 0) && (int(buff[3]) == 0) ) {  // buttons up and ready to move
       //klawPos = int(int(buff[0]) * (1.0 - cos(2*PI * int(buff[1])/127.0) ) );
-      klawPos = int(buff[0]);
-      myMotor->setSpeed(constrain(map(klawPos, 1, 127, klawPos1, klawPos2), klawPos1, klawPos2));
-      delay(15);
+      klawPos = int(buff[2]);
+      //klawPos = tau*klawPos + (1-tau)*int(buff[2]);
+      myMotor->setSpeed(constrain(map(klawPos, 0, 127, klawPos1, klawPos2), klawPos1, klawPos2));
+      delay(dly);
     //}
       
     stringComplete = false;

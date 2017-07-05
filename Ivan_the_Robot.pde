@@ -104,7 +104,7 @@ void draw() {
       port.write((buff[i]));
       
     // the following lines from adafruit_support_bill
-    while(port.available() != 0) {} // wait for an ack...
+    while(port.available() != 0) {print("*");} // wait for an ack...
     port.read();  //read the ack  
   }
 }
