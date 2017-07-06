@@ -55,7 +55,7 @@ boolean stringComplete = false;  // true to indicate nwe data is available
 
 void setup() {
   
-  Serial.begin(115200);  // set up Serial library at 9600 bps
+  Serial.begin(57600);  // set up Serial library at 9600 bps
  
   AFMS.begin(1000.0/3.0);  // create with 333Hz frequency (3ms period)
 

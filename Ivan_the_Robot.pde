@@ -159,7 +159,7 @@ void setPort(int num) {
    // Make sure to open the port at the same speed Arduino is using (9600bps)
    if (num < ports.length) {
 
-     port = new Serial(this, Serial.list()[num], 9600);
+     port = new Serial(this, Serial.list()[num], 57600);
      
       if (port != null)
         portSelected = true;
@@ -170,9 +170,9 @@ void setPort(int num) {
 
 void mousePressed() {
   if (mouseButton == LEFT)
-    leftButton = 1;
+    leftButton = width;
   if (mouseButton == RIGHT)
-    rightButton = 1;
+    rightButton = width;
 }
 
 
