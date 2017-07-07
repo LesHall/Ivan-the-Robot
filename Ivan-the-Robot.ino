@@ -1,14 +1,18 @@
-// This is a test sketch for the Adafruit assembled Motor Shield for Arduino v2
-// It won't work with v1.x motor shields! Only for the v2's with built in PWM
-// control
+// This is a controller sketch for the modified MeArm design by Les Hall
+// It is a mostly modified copy of the Adafruit Motor Party V2 sketch.  
+// The claw servo run from a DC motor port (strange but it works).  
+// Also the Z axis motor is now a NEMA17 stepper motor (the 12V 350mA 
+// motor from Adafruit which is running at 5V so that it is drawing 
+// (5V/12V)*0.350mA = 150mA approximately so it can run from USB power.  
+// no external power input is required.  
 // 
 // For use with the Adafruit Motor Shield v2 
 // ---->	http://www.adafruit.com/products/1438
 // 
-// Connect the bipolar stepper to M1/M2
-// Connect the claw's hobby 9G microservo to M3 and the power input port
-// Connect the left hobby 9G microservo to SERVO1
-// Connect the right hobby 9G microservo to SERVO2
+// Connect the bipolar stepper to M1/M2.
+// Connect the claw's hobby 9G microservo to M3 and the power input port.
+// Connect the left hobby 9G microservo to SERVO1 which is pin 10.
+// Connect the right hobby 9G microservo to SERVO2 which is pin 9.
 
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
@@ -20,46 +24,66 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 // Or, create it with a different I2C address (say for stacking)
 // Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x61); 
 
+// Z axis stepper motor:  
 // Connect a stepper motor with 200 steps per revolution (1.8 degree)
 // to motor port #2 (M1 and M2)
 Adafruit_StepperMotor *myStepper = AFMS.getStepper(200, 1);
-// And connect a DC motor to port M3  this will drive the claw servo
+
+// Claw servo motor:  
+// Connect a DC motor to port M3  this will drive the claw servo
+// the brown outer connection is ground and goes to a ground pin: 
+// choose either the power input terminal block or the center 
+// connection on the M3/M4 terminal block.  Also connect the red (center) 
+// power input to the + side of the input power terminal block. 
+// Third, connect the yellow (outer) connection to the outer M3
+// terminal block pin.  
 Adafruit_DCMotor *myMotor = AFMS.getMotor(3);
 
-// declare the Arduino Servo library class instances
-Servo servo1;  // left servo
-Servo servo2;  // right servo
-//Servo servo3;  // claw servo
+// Left and right servo motors:  
+// Declare the Arduino Servo library class instances
+// Connect the brown pin to the outer connection closer to the PCB
+// corner and the yellow pin to the inner connection closer to the PCB
+// center.  
+Servo servo1;  // left servo on pin 10
+Servo servo2;  // right servo on pin 9
 
 
 
 // global variables
-float leftPos1 = 90;
-float leftPos2 = 180;
-float leftPosPrev = 63;
-float leftPos = 63;
-float rightPos1 = 90;
-float rightPos2 = 180;
-float rightPosPrev = 63;
-float rightPos = 63;
-float clawPos1 = 0;
-float clawPos2 = 180;
-float clawPosPrev = 63;
-float clawPos = 63;
-float tau = 0.8;
-int dly = 10;
-float diff = 0.1;
+// 
+// left servo
+float leftPos1;
+float leftPos2;
+float leftPosPrev;
+float leftPos;
+// 
+// right servo
+float rightPos1;
+float rightPos2;
+float rightPosPrev;
+float rightPos;
+// 
+// claw servo
+float clawPos1;
+float clawPos2;
+float clawPosPrev;
+float clawPos;
+// 
+// misc. variables
+// float tau;
+int dly;  // delay amount
+float diff;
 char buff[20];
-boolean stringComplete = false;  // true to indicate nwe data is available 
+boolean stringComplete;  // true to indicate nwe data is available 
 
 
 void setup() {
   
-  Serial.begin(57600);  // set up Serial library at 9600 bps
+  Serial.begin(57600);  // set up Serial library at 57600 bps
  
   AFMS.begin(1000.0/3.0);  // create with 333Hz frequency (3ms period)
 
- // global variables
+  // global variables
   leftPos1 = 90;
   leftPos2 = 180;
   leftPosPrev = 63;
@@ -72,9 +96,9 @@ void setup() {
   clawPos2 = 180;
   clawPosPrev = 63;
   clawPos = 63;
-  tau = 0.8;
+  // tau = 0.8;
   dly = 10;
-  diff = 0.1;
+  diff = 2;
   for (int i = 0; i< 20; i++)
     buff[i] = 0;
   stringComplete = false;
@@ -82,15 +106,14 @@ void setup() {
   // Attach servos to pins
   servo1.attach(10);
   servo2.attach(9);
-  //servo3.attach(3);
    
   // initialize the stepper
   myStepper->setSpeed(20);  // in units of rpm   
   myStepper->step(0, FORWARD, MICROSTEP);  // move clockwise
 
   // initialize left and right motor positions
-  //servo1.write(constrain(map(leftPos, 0, 127, leftPos1, leftPos2), leftPos1, leftPos2));
-  //servo2.write(constrain(map(rightPos, 0, 127, rightPos1, rightPos2), rightPos1, rightPos2));
+  servo1.write(constrain(map(leftPos, 0, 127, leftPos1, leftPos2), leftPos1, leftPos2));
+  servo2.write(constrain(map(rightPos, 0, 127, rightPos1, rightPos2), rightPos1, rightPos2));
 
   // initialize the claw position
   myMotor->setSpeed(clawPos);
@@ -115,7 +138,6 @@ void loop() {
     }
     if ( (int(buff[2]) != 0) && (int(buff[3]) == 0) ) { // buttons up and ready to move
       myStepper->step(3, BACKWARD, MICROSTEP);  // move counter-clockwise
-      //delay(dly);  // delay to allow commands to take effect
     }
     
     // update left motor angle
@@ -151,10 +173,10 @@ void loop() {
       
     delay(dly);
     stringComplete = false;
-
-    // the following line is from adafruit_support_bill, an amazingly helpful person
-    Serial.write('A');  // any old character will do for an 'ack'  
   }
+
+  // the following line is from adafruit_support_bill, an amazingly helpful person
+  Serial.write('A');  // any old character will do for an 'ack'  
 }
 
 
@@ -162,12 +184,13 @@ void loop() {
 // from an example on arduino.cc
 // modified by Les Hall circa / prior to Wed Jul 5 2017
 void serialEvent() {
-  
-  while (Serial.available() > 0) {
+
+  //stay in a loop as long as characters are incoming
+  while (Serial.available() > 4) {
 
     // read in the data bytes
-    Serial.readBytesUntil(char(128), buff, 20);
-    Serial.flush();
+    Serial.readBytesUntil(char(128), buff, 20);  // read one line of input
+    Serial.flush();  // clear the output buffer
     
     stringComplete = true;
   }

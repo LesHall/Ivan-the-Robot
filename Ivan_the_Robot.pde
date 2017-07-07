@@ -52,7 +52,7 @@ void draw() {
   float motionX = width/2 * cos(TWO_PI * frameCount / 250);
   float motionY = height/2 * sin(TWO_PI * frameCount / 250);
   float motionR = width/2 * ( 2 + sin(TWO_PI * frameCount / 1000) ) / 4;
-   
+
   // convert to polar, then rotate 45 degrees
   float x0 = motionSelect ? motionX : mouseX - width/2;
   float y0 = motionSelect ? motionY : mouseY - height/2;
@@ -107,10 +107,8 @@ void draw() {
   };
   
   // draw lines in the middle indicating X and Y
-  stroke(255, 255, 0);
-  line(width/2, height/2, width/2 + width/2*cos(TWO_PI * buff[0]/127), width/2 + width/2*sin(TWO_PI * buff[0]/127));
-  stroke(0, 255, 255);
-  line(width/2, height/2, width/2 + width/2*cos(TWO_PI * buff[1]/127), width/2 + width/2*sin(TWO_PI * buff[1]/127));
+  stroke(255, 255, 255);
+  line(width/2, height/2, width/2 + width/2 * buff[0]/127.0, height/2 + height/2 * buff[1]/127.0);
   
   // write out one set of commands
   if (portSelected) {
